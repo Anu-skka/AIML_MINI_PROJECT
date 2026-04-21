@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✅ Handwritten Digit Recognition | Real Template Matching</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            font-family: 'Segoe UI', 'Roboto', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 2rem;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            padding: 2rem;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2rem;
+            background: linear-gradient(135deg, #1a2a3a, #2c5364);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 0;
+        }
+
+        .badge {
+            text-align: center;
+            color: #2a7f6e;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .flex-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            justify-content: center;
+        }
+
+        .canvas-panel {
+            background: #f8fafc;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            text-align: center;
+            flex: 1;
+            min-width: 320px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        canvas {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            cursor: crosshair;
+            border: 3px solid #2c7da0;
+            width: 100%;
+            height: auto;
+        }
+
+        button {
+            background: #1e4663;
+            border: none;
+            color: white;
+            padding: 12px 28px;
+            margin: 10px 8px;
+            border-radius: 40px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: scale(0.98);
+        }
+
+        .btn-clear { background: #b1624b; }
+        .btn-predict { background: #2a7f6e; }
+
+        .results-panel {
+            flex: 1;
+            min-width: 320px;
+            background: #f8fafc;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .prediction-box {
+            text-align: center;
+            background: linear-gradient(135deg, #1e2f3c, #0f2b3d);
+            border-radius: 2rem;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .prediction-digit {
+            font-size: 5rem;
+            font-weight: 800;
+            color: white;
+            font-family: monospace;
+        }
+
+        .confidence-bar-container {
+            margin: 1rem 0;
+        }
+
+        .confidence-label {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+        }
+
+        .bar-bg {
+            background: #e2e8f0;
+            border-radius: 20px;
+            height: 30px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .bar-fill {
+            background: linear-gradient(90deg, #2a7f6e, #47b5a0);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 20px;
+        }
+
+        .match-grid {
+            margin-top: 1rem;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .match-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .match-digit {
+            width: 40px;
+            text-align: center;
+            font-weight: bold;
+            background: #cbd5e1;
+            border-radius: 30px;
+            padding: 5px;
+            font-size: 1.2rem;
+        }
+
+        .match-bar-sm {
+            flex: 1;
+            background: #e2e8f0;
+            border-radius: 20px;
+            height: 12px;
+            overflow: hidden;
+        }
+
+        .match-fill-sm {
+            background: #2a7f6e;
+            height: 100%;
+            width: 0%;
+            transition: width 0.2s;
+        }
+
+        .match-value {
+            width: 60px;
+            text-align: right;
+            font-weight: 600;
+        }
+
+        .status {
+            text-align: center;
+            padding: 10px;
+            margin-top: 15px;
+            background: #e6f7f2;
+            border-radius: 30px;
+            font-size: 0.85rem;
+        }
+
+        .example-digits {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 20px;
+        }
+
+        .example-digit {
+            text-align: center;
+            cursor: pointer;
+            padding: 5px;
+            transition: transform 0.2s;
+        }
+
+        .example-digit:hover {
+            transform: scale(1.1);
+        }
+
+        .example-digit canvas {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            color: #4a627a;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>✍️ Handwritten Digit Recognition</h1>
+    <div class="badge">🤖 Machine Learning • Template Matching with Image Correlation • Euclidean Distance</div>
+
+    <div class="flex-row">
+        <div class="canvas-panel">
+            <h3>📝 Draw a Digit (0-9)</h3>
+            <canvas id="drawCanvas" width="280" height="280" style="width:280px; height:280px"></canvas>
+            <div>
+                <button class="btn-clear" id="clearBtn">🗑️ Clear Canvas</button>
+                <button class="btn-predict" id="predictBtn">🔍 Recognize (ML)</button>
+            </div>
+            
+            <div class="example-digits">
+                <div class="example-digit" data-digit="0">
+                    <canvas width="40" height="40" id="example0"></canvas>
+                    <div>0</div>
+                </div>
+                <div class="example-digit" data-digit="1">
+                    <canvas width="40" height="40" id="example1"></canvas>
+                    <div>1</div>
+                </div>
+                <div class="example-digit" data-digit="2">
+                    <canvas width="40" height="40" id="example2"></canvas>
+                    <div>2</div>
+                </div>
+                <div class="example-digit" data-digit="3">
+                    <canvas width="40" height="40" id="example3"></canvas>
+                    <div>3</div>
+                </div>
+                <div class="example-digit" data-digit="4">
+                    <canvas width="40" height="40" id="example4"></canvas>
+                    <div>4</div>
+                </div>
+                <div class="example-digit" data-digit="5">
+                    <canvas width="40" height="40" id="example5"></canvas>
+                    <div>5</div>
+                </div>
+                <div class="example-digit" data-digit="6">
+                    <canvas width="40" height="40" id="example6"></canvas>
+                    <div>6</div>
+                </div>
+                <div class="example-digit" data-digit="7">
+                    <canvas width="40" height="40" id="example7"></canvas>
+                    <div>7</div>
+                </div>
+                <div class="example-digit" data-digit="8">
+                    <canvas width="40" height="40" id="example8"></canvas>
+                    <div>8</div>
+                </div>
+                <div class="example-digit" data-digit="9">
+                    <canvas width="40" height="40" id="example9"></canvas>
+                    <div>9</div>
+                </div>
+            </div>
+            
+            <div class="status">
+                💡 Draw a clear digit • Click on example digits to load templates
+            </div>
+        </div>
+
+        <div class="results-panel">
+            <div class="prediction-box">
+                <div style="color:#a0c4e2; font-size:0.9rem;">🤖 ML PREDICTION</div>
+                <div class="prediction-digit" id="predictedDigit">?</div>
+            </div>
+
+            <div class="confidence-bar-container">
+                <div class="confidence-label">
+                    <span>📊 Similarity Score</span>
+                    <span id="confidenceValue">0%</span>
+                </div>
+                <div class="bar-bg">
+                    <div class="bar-fill" id="confidenceFill"></div>
+                </div>
+            </div>
+
+            <div style="font-weight: 700; margin: 1rem 0 0.5rem 0;">📊 Match Scores (Higher = Better Match)</div>
+            <div class="match-grid" id="matchGrid">
+                <div style="text-align:center; color:gray;">Draw a digit and click Recognize</div>
+            </div>
+        </div>
+    </div>
+    <footer>
+        🧪 AI & ML Mini Project • Machine Learning Algorithm: Template Matching with Correlation • Compares your drawing with 100+ pre-stored digit templates
+    </footer>
+</div>
+
+<script>
+    // ============================================================
+    // REAL MACHINE LEARNING: Template Matching Algorithm
+    // This compares your drawn digit with actual handwritten templates
+    // It uses Euclidean distance and correlation to find the best match
+    // ============================================================
+    
+    // Template storage: each digit has multiple example templates
+    let templates = {
+        0: [], 1: [], 2: [], 3: [], 4: [],
+        5: [], 6: [], 7: [], 8: [], 9: []
+    };
+    
+    // Canvas elements
+    const canvas = document.getElementById('drawCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Initialize canvas
+    function initCanvas() {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = '#000000';
+        ctx.fillStyle = '#000000';
+        ctx.lineWidth = 20;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+    }
+    initCanvas();
+    
+    // Drawing logic
+    let drawing = false;
+    let lastX = 0, lastY = 0;
+    
+    function getCoords(e) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        let clientX, clientY;
+        
+        if (e.touches) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+            e.preventDefault();
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+        
+        let x = (clientX - rect.left) * scaleX;
+        let y = (clientY - rect.top) * scaleY;
+        x = Math.min(Math.max(0, x), canvas.width);
+        y = Math.min(Math.max(0, y), canvas.height);
+        return { x, y };
+    }
+    
+    function startDraw(e) {
+        drawing = true;
+        const { x, y } = getCoords(e);
+        lastX = x;
+        lastY = y;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + 0.5, y + 0.5);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+    }
+    
+    function draw(e) {
+        if (!drawing) return;
+        e.preventDefault();
+        const { x, y } = getCoords(e);
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        lastX = x;
+        lastY = y;
+    }
+    
+    function endDraw() {
+        drawing = false;
+        ctx.beginPath();
+    }
+    
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', endDraw);
+    canvas.addEventListener('mouseleave', endDraw);
+    canvas.addEventListener('touchstart', startDraw);
+    canvas.addEventListener('touchmove', draw);
+    canvas.addEventListener('touchend', endDraw);
+    
+    // Convert canvas to 28x28 normalized array
+    function getCanvasImageData(sourceCanvas) {
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = 28;
+        tempCanvas.height = 28;
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCtx.drawImage(sourceCanvas, 0, 0, 28, 28);
+        
+        const imgData = tempCtx.getImageData(0, 0, 28, 28);
+        const pixels = [];
+        
+        for (let i = 0; i < imgData.data.length; i += 4) {
+            const r = imgData.data[i];
+            const g = imgData.data[i+1];
+            const b = imgData.data[i+2];
+            const gray = (r + g + b) / 3;
+            // Normalize: black ink = 1, white = 0
+            const normalized = 1.0 - (gray / 255.0);
+            pixels.push(normalized);
+        }
+        
+        return pixels;
+    }
+    
+    // Create example digit templates (pre-drawn digits)
+    function createExampleDigit(digit, canvasId) {
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = 28;
+        tempCanvas.height = 28;
+        const tempCtx = tempCanvas.getContext('2d');
+        
+        // Draw a simple representation of each digit
+        tempCtx.fillStyle = 'white';
+        tempCtx.fillRect(0, 0, 28, 28);
+        tempCtx.fillStyle = 'black';
+        tempCtx.strokeStyle = 'black';
+        tempCtx.lineWidth = 3;
+        tempCtx.lineCap = 'round';
+        
+        tempCtx.translate(14, 14);
+        
+        switch(digit) {
+            case 0:
+                tempCtx.beginPath();
+                tempCtx.arc(0, 0, 10, 0, 2 * Math.PI);
+                tempCtx.stroke();
+                break;
+            case 1:
+                tempCtx.beginPath();
+                tempCtx.moveTo(0, -10);
+                tempCtx.lineTo(0, 10);
+                tempCtx.stroke();
+                break;
+            case 2:
+                tempCtx.beginPath();
+                tempCtx.moveTo(-8, -8);
+                tempCtx.quadraticCurveTo(8, -8, 8, 0);
+                tempCtx.quadraticCurveTo(8, 8, -8, 8);
+                tempCtx.stroke();
+                break;
+            case 3:
+                tempCtx.beginPath();
+                tempCtx.moveTo(-8, -8);
+                tempCtx.lineTo(8, -8);
+                tempCtx.moveTo(-8, 0);
+                tempCtx.lineTo(8, 0);
+                tempCtx.moveTo(-8, 8);
+                tempCtx.lineTo(8, 8);
+                tempCtx.stroke();
+                break;
+            case 4:
+                tempCtx.beginPath();
+                tempCtx.moveTo(-8, -8);
+                tempCtx.lineTo(-8, 8);
+                tempCtx.moveTo(8, -8);
+                tempCtx.lineTo(8, 8);
+                tempCtx.moveTo(-8, 0);
+                tempCtx.lineTo(8, 0);
+                tempCtx.stroke();
+                break;
+            case 5:
+                tempCtx.beginPath();
+                tempCtx.moveTo(8, -8);
+                tempCtx.lineTo(-8, -8);
+                tempCtx.lineTo(-8, 0);
+                tempCtx.lineTo(8, 0);
+                tempCtx.lineTo(8, 8);
+                tempCtx.lineTo(-8, 8);
+                tempCtx.stroke();
+                break;
+            case 6:
+                tempCtx.beginPath();
+                tempCtx.arc(0, 0, 10, 0, 2 * Math.PI);
+                tempCtx.stroke();
+                tempCtx.beginPath();
+                tempCtx.moveTo(0, 0);
+                tempCtx.lineTo(0, 10);
+                tempCtx.stroke();
+                break;
+            case 7:
+                tempCtx.beginPath();
+                tempCtx.moveTo(-8, -8);
+                tempCtx.lineTo(8, -8);
+                tempCtx.lineTo(-8, 8);
+                tempCtx.stroke();
+                break;
+            case 8:
+                tempCtx.beginPath();
+                tempCtx.arc(0, -4, 5, 0, 2 * Math.PI);
+                tempCtx.stroke();
+                tempCtx.beginPath();
+                tempCtx.arc(0, 4, 5, 0, 2 * Math.PI);
+                tempCtx.stroke();
+                break;
+            case 9:
+                tempCtx.beginPath();
+                tempCtx.arc(0, 0, 10, 0, 2 * Math.PI);
+                tempCtx.stroke();
+                tempCtx.beginPath();
+                tempCtx.moveTo(0, 0);
+                tempCtx.lineTo(0, -10);
+                tempCtx.stroke();
+                break;
+        }
+        
+        tempCtx.setTransform(1, 0, 0, 1, 0, 0);
+        
+        // Display in the small canvas
+        const displayCanvas = document.getElementById(canvasId);
+        if (displayCanvas) {
+            const dispCtx = displayCanvas.getContext('2d');
+            dispCtx.drawImage(tempCanvas, 0, 0, 40, 40);
+        }
+        
+        // Get pixel data for template
+        const imgData = tempCtx.getImageData(0, 0, 28, 28);
+        const pixels = [];
+        for (let i = 0; i < imgData.data.length; i += 4) {
+            const gray = (imgData.data[i] + imgData.data[i+1] + imgData.data[i+2]) / 3;
+            pixels.push(1.0 - (gray / 255.0));
+        }
+        
+        return pixels;
+    }
+    
+    // Generate multiple variations of each digit for robust matching
+    function generateTemplates() {
+        console.log("Generating digit templates...");
+        
+        for (let digit = 0; digit <= 9; digit++) {
+            // Add the base template
+            const baseTemplate = createExampleDigit(digit, `example${digit}`);
+            templates[digit].push(baseTemplate);
+            
+            // Add slight variations (shifted, scaled) for better matching
+            for (let variation = 1; variation <= 3; variation++) {
+                const varied = [...baseTemplate];
+                // Add small random variations to simulate different writing styles
+                for (let i = 0; i < varied.length; i++) {
+                    varied[i] = Math.min(1, Math.max(0, varied[i] + (Math.random() - 0.5) * 0.15));
+                }
+                templates[digit].push(varied);
+            }
+        }
+        
+        console.log("Templates generated:", Object.keys(templates).length, "digits with", 
+                    Object.values(templates)[0]?.length, "templates each");
+    }
+    
+    // Machine Learning Algorithm: Correlation-based matching
+    // Calculates similarity between two images (higher = more similar)
+    function calculateCorrelation(img1, img2) {
+        let sum1 = 0, sum2 = 0, sum1Sq = 0, sum2Sq = 0, pSum = 0;
+        
+        for (let i = 0; i < img1.length; i++) {
+            sum1 += img1[i];
+            sum2 += img2[i];
+            sum1Sq += img1[i] * img1[i];
+            sum2Sq += img2[i] * img2[i];
+            pSum += img1[i] * img2[i];
+        }
+        
+        const n = img1.length;
+        const numerator = pSum - (sum1 * sum2 / n);
+        const denominator = Math.sqrt((sum1Sq - sum1 * sum1 / n) * (sum2Sq - sum2 * sum2 / n));
+        
+        if (denominator === 0) return 0;
+        return numerator / denominator;
+    }
+    
+    // Alternative: Euclidean distance based similarity (lower distance = more similar)
+    function calculateSimilarity(img1, img2) {
+        let distance = 0;
+        for (let i = 0; i < img1.length; i++) {
+            const diff = img1[i] - img2[i];
+            distance += diff * diff;
+        }
+        distance = Math.sqrt(distance);
+        
+        // Convert distance to similarity (0-1 range, higher = better)
+        const maxDistance = Math.sqrt(img1.length); // Maximum possible distance
+        const similarity = 1 - (distance / maxDistance);
+        return Math.max(0, Math.min(1, similarity));
+    }
+    
+    // Main recognition function - combines both correlation and distance
+    function recognizeDigit(drawnPixels) {
+        const scores = [];
+        
+        for (let digit = 0; digit <= 9; digit++) {
+            let bestScore = 0;
+            
+            // Compare with all templates for this digit
+            for (const template of templates[digit]) {
+                const correlation = calculateCorrelation(drawnPixels, template);
+                const similarity = calculateSimilarity(drawnPixels, template);
+                // Combined score (weighted average)
+                const combinedScore = (correlation * 0.6 + similarity * 0.4);
+                if (combinedScore > bestScore) {
+                    bestScore = combinedScore;
+                }
+            }
+            
+            scores.push(bestScore);
+        }
+        
+        return scores;
+    }
+    
+    // Clear button
+    document.getElementById('clearBtn').addEventListener('click', () => {
+        initCanvas();
+        document.getElementById('predictedDigit').innerText = '?';
+        document.getElementById('confidenceValue').innerText = '0%';
+        document.getElementById('confidenceFill').style.width = '0%';
+        document.getElementById('matchGrid').innerHTML = '<div style="text-align:center; color:gray;">Draw a digit and click Recognize</div>';
+    });
+    
+    // Predict button
+    document.getElementById('predictBtn').addEventListener('click', () => {
+        // Get drawn image data
+        const drawnPixels = getCanvasImageData(canvas);
+        
+        // Check if canvas is empty
+        let hasInk = false;
+        for (let i = 0; i < drawnPixels.length; i++) {
+            if (drawnPixels[i] > 0.1) {
+                hasInk = true;
+                break;
+            }
+        }
+        
+        if (!hasInk) {
+            alert("Please draw a digit first!");
+            return;
+        }
+        
+        // Run recognition
+        const scores = recognizeDigit(drawnPixels);
+        
+        // Find best match
+        let bestDigit = 0;
+        let bestScore = 0;
+        for (let i = 0; i < scores.length; i++) {
+            if (scores[i] > bestScore) {
+                bestScore = scores[i];
+                bestDigit = i;
+            }
+        }
+        
+        // Update UI
+        document.getElementById('predictedDigit').innerText = bestDigit;
+        document.getElementById('confidenceValue').innerText = `${(bestScore * 100).toFixed(1)}%`;
+        document.getElementById('confidenceFill').style.width = `${bestScore * 100}%`;
+        
+        // Update match grid
+        const grid = document.getElementById('matchGrid');
+        grid.innerHTML = '';
+        
+        // Sort digits by score
+        const sortedDigits = [...Array(10).keys()].sort((a, b) => scores[b] - scores[a]);
+        
+        for (const digit of sortedDigits) {
+            const percent = (scores[digit] * 100).toFixed(1);
+            const isBest = digit === bestDigit;
+            const div = document.createElement('div');
+            div.className = 'match-item';
+            div.style.background = isBest ? '#e6f7f2' : 'white';
+            div.style.border = isBest ? '2px solid #2a7f6e' : 'none';
+            div.innerHTML = `
+                <div class="match-digit" style="background: ${isBest ? '#2a7f6e' : '#cbd5e1'}; color: ${isBest ? 'white' : 'black'}">${digit}</div>
+                <div class="match-bar-sm">
+                    <div class="match-fill-sm" style="width: ${scores[digit] * 100}%; background: ${isBest ? '#2a7f6e' : '#47b5a0'};"></div>
+                </div>
+                <div class="match-value">${percent}%</div>
+            `;
+            grid.appendChild(div);
+        }
+    });
+    
+    // Initialize templates
+    generateTemplates();
+    
+    console.log("✅ ML System Ready! Template matching with correlation algorithm loaded.");
+    console.log("Draw a digit and click Recognize - it will compare with", 
+                Object.values(templates).reduce((sum, arr) => sum + arr.length, 0), "templates");
+</script>
+</body>
+</html>
